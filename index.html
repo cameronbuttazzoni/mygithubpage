@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+	</script>
+	<script>
+		$(document).ready(function(){
+			var in_currency = "CAD"
+			var out_currency = "USD"
+			var exchange_rate = 1;
+			function calc_exchange(money){
+				money = parseFloat(money);
+				if (in_currency == out_currency){
+					return money;
+				}
+				var req = new XMLHttpRequest();  
+				req.open('GET', 'http://finance.yahoo.com/webservice/v1/symbols/allcurrencies/quote', false);   
+				req.send(null);  
+				var data;
+				find_string = in_currency + "/" + out_currency; //exchange rate we need
+				if(req.status == 200){ //Doesnt work correctly because of Same-Origin Policy
+					data = req.responseText;
+					loc = data.search(find_string);
+					new_string = data.substring(loc + 36, loc + 50); //NEED TO FIND TRUE BOUNDS
+					loc = new_string.search("<");
+					exchange_rate = float(new_string.substring(0, loc-1)); 
+					return money * exchange_rate;
+				}
+				else return NaN;
+			}
+			
+			$('#in_amount').on('input', function() {
+			$("#out_amount").html((calc_exchange($("#in_amount").val())).toString());
+			});
+			$('#in_select').on('input', function() {
+			in_currency = $("#in_select").val();
+			$("#out_amount").html(($("#in_amount").val()).toString());
+			});
+			$('#out_select').on('input', function() {
+			out_currency = $("#out_select").val();
+			$("#out_amount").html(($("#in_amount").val()).toString());
+			});
+		});
+	</script>
+	
+	<title>Currency Converter</title>
+</head>
+
+<body>
+<p>Amount to Convert: <input type="text" id="in_amount" value=0>
+<p>From: <select id="in_select">
+  <option value="CAD">CAD</option>
+  <option value="USD">USD</option>
+  <option value="EUR">EUR</option>
+  <option value="RMB">RMB</option>
+</select>
+</p>
+
+<p>To: <select id="out_select">
+  <option value="CAD">CAD</option>
+  <option value="USD">USD</option>
+  <option value="EUR">EUR</option>
+  <option value="RMB">RMB</option>
+</select>
+<p>Value: <output type="text" id="out_amount" value="0.00">
+</body>
+
+</html>
